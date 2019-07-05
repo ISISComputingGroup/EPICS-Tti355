@@ -4,6 +4,7 @@ InTerminator = "\r\n";
 # Set the output voltage
 setVoltage {
     out "V %f";
+    @init{ out "V?"; in "V%f"; }
 }
 
 # Get the output voltage
@@ -29,6 +30,7 @@ getIDN {
 # Set the output current
 setCurrent {
     out "I %f";
+    @init{ out "I?"; in "I%f"; }
 }
 
 # Get the output current
