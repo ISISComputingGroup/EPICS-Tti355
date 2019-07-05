@@ -22,7 +22,7 @@ getActualVoltage {
 
 getIDN {
     out "*IDN?";
-	in "%#s";
+    in "%#s";
     ExtraInput = Ignore;
 }
 
@@ -71,7 +71,7 @@ reset
     {
     out "*RST";
     }
-	
+    
 # Get the output mode status
 # this reflects whether the supply is voltage or current limiting (automatically switched)
 getMode
@@ -80,7 +80,7 @@ getMode
     in "M C%{V|I}";
     }
 
-	
+    
 cmd {
     out "\$1";
 }
