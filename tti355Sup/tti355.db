@@ -1,0 +1,295 @@
+# TTi EX355P Power Supply
+# I.Gillingham May 2013, S.Kirkham June 2019.
+# 
+# Macros:
+#   P   - The prefix name
+#   PORT- The asyn port
+
+# Dependencies
+#     tti355.proto
+#
+# RS-232C Specifications
+#     Baud rate: 9600 Baud
+#     Stop bits: 1 bit
+#        Parity: None
+#   Data length: 8 bit
+#
+# Notes:
+#     Communication command is terminated with CR and LF.
+#     Communication return is terminated with CR. 
+#
+
+record(bo, "$(P)SIM")
+{
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+    field(ZNAM, "NO")
+    field(ONAM, "YES")
+    field(VAL, "$(RECSIM=0)")
+    field(PINI, "YES")
+}
+
+record(bo, "$(P)DISABLE")
+{
+    field(DESC, "Disable comms")
+    field(PINI, "YES")
+    field(VAL, "$(DISABLE=0)")
+    field(OMSL, "supervisory")
+    field(ZNAM, "COMMS ENABLED")
+    field(ONAM, "COMMS DISABLED")
+}
+
+# Reset the instrument
+record(bo, "$(P)RESET:SP") 
+{
+    field(DESC, "Reset supply")
+    field(DTYP, "stream")
+    field(OUT,  "@tti355.proto reset $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:RESET:SP")
+    field(SDIS, "$(P)DISABLE")
+}
+
+alias("$(P)RESET:SP", "$(P)RESET")
+
+### VOLTAGE ###
+
+# The desired output voltage.
+record(ao, "$(P)VOLTAGE:SP") 
+{
+    field(DESC, "Output voltage")
+    field(FLNK, "$(P)ERROR PP")
+    field(EGU, "V")
+    field(DRVH, "$(MAX_VOLT)")
+    field(DRVL, "$(MIN_VOLT)")
+    field(PREC, "2")
+    field(SCAN, "Passive")
+    field(DTYP, "stream")
+    field(OUT,  "@tti355.proto setVoltage $(PORT)")
+    field(PINI, "YES")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:VOLTAGE:SP")
+    field(SDIS, "$(P)DISABLE")
+}
+
+# The read back setpoint voltage
+record(ai, "$(P)VOLTAGE:SP:RBV") 
+{
+    field(SCAN, "1 second")
+    field(DTYP, "stream")
+    field(PREC, "2")
+    field(EGU,  "V")
+    field(INP,  "@tti355.proto getSetpointVoltage $(PORT)")
+    field(PINI, "YES")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:VOLTAGE:SP:RBV")
+    field(SDIS, "$(P)DISABLE")
+}
+
+
+# The read back output voltage
+record(ai, "$(P)VOLTAGE") 
+{
+    field(SCAN, "1 second")
+    field(DTYP, "stream")
+    info(INTEREST, "HIGH")
+    info(alarm, "TTI355")
+    field(DESC, "Output voltage in V")
+    field(PREC, "2")
+    field(EGU,  "V")
+    field(INP,  "@tti355.proto getActualVoltage $(PORT)")
+    field(PINI, "YES")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:VOLTAGE")
+    field(SDIS, "$(P)DISABLE")
+}
+
+### CURRENT ###
+
+# The desired output current.
+record(ao, "$(P)CURRENT:SP") 
+{
+    field(DESC, "Output current set point")
+    field(FLNK, "$(P)ERROR PP")
+    field(EGU, "A")
+    field(DRVH, "$(MAX_CURR)")
+    field(DRVL, "$(MIN_CURR)")
+    field(PREC, "2")
+    field(SCAN, "Passive")
+    field(DTYP, "stream")
+    field(OUT,  "@tti355.proto setCurrent $(PORT)")
+    field(PINI, "YES")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:CURRENT:SP")
+    field(SDIS, "$(P)DISABLE")
+}
+
+# The read back setpoint current
+record(ai, "$(P)CURRENT:SP:RBV") 
+{
+    field(SCAN, "1 second")
+    field(DESC, "Output current set point read back value")
+    field(DTYP, "stream")
+    field(EGU, "A")
+    field(PREC, "2")
+    field(INP,  "@tti355.proto getSetpointCurrent $(PORT)")
+    field(PINI, "YES")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:CURRENT:SP:RBV")
+    field(SDIS, "$(P)DISABLE")
+}
+
+# The read back output current
+record(ai, "$(P)CURRENT") 
+{
+    field(DESC, "Output current in A.")
+    field(SCAN, "1 second")
+    field(DTYP, "stream")
+    info(INTEREST, "HIGH")
+    field(EGU, "A")
+    field(PREC, "2")
+    field(INP,  "@tti355.proto getActualCurrent $(PORT)")
+    field(PINI, "YES")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:CURRENT")
+    field(SDIS, "$(P)DISABLE")
+}
+
+
+### OUTPUT STATUS ON/OFF ###
+
+# Output control
+record(bo, "$(P)OUTPUTSTATUS:SP") 
+{
+    field(DESC, "Output control")
+    field(SCAN, "Passive")
+    field(DTYP, "stream")
+    field(OUT,  "@tti355.proto setOutput $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:OUTPUTSTATUS:SP")
+    field(SDIS, "$(P)DISABLE")
+}
+
+# Output state
+record(bi, "$(P)OUTPUTSTATUS") 
+{
+    field(DESC, "Output read back")
+    field(SCAN, "1 second")
+    field(DTYP, "stream")
+    field(INP,  "@tti355.proto getOutput $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:OUTPUTSTATUS")
+    field(SDIS, "$(P)DISABLE")
+}
+
+alias("$(P)OUTPUTSTATUS", "$(P)OUTPUTSTATUS:SP:RBV")
+
+### ERROR ###
+
+# The error register
+record(mbbi, "$(P)ERROR")
+{
+    field(DESC, "Error status")
+    field(DTYP, "stream")
+    field(INP,  "@tti355.proto getError $(PORT)")
+    info(INTEREST, "HIGH")
+    
+    
+    field(ZRVL, "0")
+    field(ZRST, "No error")
+    field(ZRSV, "NO_ALARM")
+    
+    field(ONVL, "1")
+    field(ONST, "Cmd not recognised")
+    field(ONSV, "MINOR")
+    
+    field(TWVL, "2")
+    field(TWST, "Cmd outside limits")
+    field(TWSV, "MAJOR")
+    
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:ERROR")
+    field(SDIS, "$(P)DISABLE")
+}
+
+### IDENTITY ###
+
+record(stringin, "$(P)IDENT")
+{
+    field(DESC, "Identity")
+    field(DTYP, "stream")
+    field(INP,  "@tti355.proto getIDN $(PORT)")
+    field(SCAN, "10 second")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:IDENT")
+    field(SDIS, "$(P)DISABLE")
+}
+
+# Output mode status
+record(bi, "$(P)OUTPUTMODE") 
+{
+    field(SCAN, "1 second")
+    field(DTYP, "stream")
+    field(INP,  "@tti355.proto getMode $(PORT)")
+    field(ZNAM, "Constant Voltage")
+    field(ONAM, "Constant Current")
+    field(SIML, "$(P)SIM")
+    field(SIOL, "$(P)SIM:OUTPUTMODE")
+    field(SDIS, "$(P)DISABLE")
+}
+
+### SIMULATION RECORDS ###
+
+record(ao, "$(P)SIM:VOLTAGE")
+{
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+}
+
+alias("$(P)SIM:VOLTAGE","$(P)SIM:VOLTAGE:SP")
+
+alias("$(P)SIM:VOLTAGE","$(P)SIM:VOLTAGE:SP:RBV")
+
+
+record(ao, "$(P)SIM:CURRENT")
+{
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+}
+
+alias("$(P)SIM:CURRENT","$(P)SIM:CURRENT:SP")
+
+alias("$(P)SIM:CURRENT","$(P)SIM:CURRENT:SP:RBV")
+
+record(bi, "$(P)SIM:OUTPUTSTATUS")
+{
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+}
+
+alias("$(P)SIM:OUTPUTSTATUS","$(P)SIM:OUTPUTSTATUS:SP")
+
+alias("$(P)SIM:OUTPUTSTATUS","$(P)SIM:OUTPUTSTATUS:SP:RBV")
+
+
+record(mbbi, "$(P)SIM:ERROR")
+{
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+}
+
+
+record(stringin, "$(P)SIM:IDENT")
+{
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+}
+
